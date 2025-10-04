@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Vaccinations\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Schema;
 
 class VaccinationForm
@@ -11,6 +12,9 @@ class VaccinationForm
     {
         return $schema
             ->components([
+                Hidden::make('uuid')
+                    ->default(fn () => \Illuminate\Support\Str::uuid()->toString()),
+
                 TextInput::make('vaccination_no')
                     ->required(),
                 TextInput::make('livestock_id')

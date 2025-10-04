@@ -31,6 +31,11 @@ class FarmOwner extends Model
         return $this->belongsTo(User::class, 'assigned_by');
     }
 
+    public function assignedBy()
+    {
+        return $this->belongsTo(User::class, 'assigned_by');
+    }
+
     public function state()
     {
         return $this->belongsTo(State::class, 'state_id');

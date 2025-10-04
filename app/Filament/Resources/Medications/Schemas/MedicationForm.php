@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Medications\Schemas;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Schema;
 
 class MedicationForm
@@ -13,6 +14,9 @@ class MedicationForm
     {
         return $schema
             ->components([
+                Hidden::make('uuid')
+                    ->default(fn () => \Illuminate\Support\Str::uuid()->toString()),
+
                 Textarea::make('quantity')
                     ->required()
                     ->columnSpanFull(),

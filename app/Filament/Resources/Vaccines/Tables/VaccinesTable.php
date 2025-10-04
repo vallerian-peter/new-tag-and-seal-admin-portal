@@ -28,14 +28,20 @@ class VaccinesTable
                 TextColumn::make('lot')
                     ->searchable(),
                 TextColumn::make('formulation_type')
-                    ->badge(),
+                    ->badge()
+                    ->color(fn ($record) => match (strtolower($record->formulation_type ?? '')) {
+                        'live-attenuated' => 'info',
+                        'inactivated' => 'danger',
+                        'subunit' => 'warning',
+                        default => 'secondary',
+                    }),
                 TextColumn::make('dose')
                     ->searchable(),
-                TextColumn::make('created_by')
-                    ->numeric()
+                TextColumn::make('createdBy.username')
+                    ->label('Created By')
                     ->sortable(),
-                TextColumn::make('updated_by')
-                    ->numeric()
+                TextColumn::make('updatedBy.username')
+                    ->label('Updated By')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -45,17 +51,24 @@ class VaccinesTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('vaccine_status_id')
-                    ->numeric()
+                TextColumn::make('vaccineStatus.name')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn ($record) => match (strtolower($record->vaccineStatus?->name ?? '')) {
+                        'active' => 'success',
+                        'inactive' => 'warning',
+                        'expired' => 'danger',
+                        default => 'secondary',
+                    })
                     ->sortable(),
-                TextColumn::make('vaccine_type_id')
-                    ->numeric()
+                TextColumn::make('vaccineType.name')
+                    ->label('Type')
                     ->sortable(),
-                TextColumn::make('vaccine_schedule_id')
-                    ->numeric()
+                TextColumn::make('vaccineSchedule.name')
+                    ->label('Schedule')
                     ->sortable(),
-                TextColumn::make('farm_id')
-                    ->numeric()
+                TextColumn::make('farm.name')
+                    ->label('Farm')
                     ->sortable(),
             ])
             ->filters([

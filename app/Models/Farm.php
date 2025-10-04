@@ -31,6 +31,7 @@ class Farm extends Model
         'farm_status_id',
         'has_coordinates',
         'gps',
+        'uuid',
     ];
 
     public function sizeUnit()
@@ -98,9 +99,19 @@ class Farm extends Model
         return $this->hasMany(FarmOwner::class, 'farm_id');
     }
 
+    public function owners()
+    {
+        return $this->hasMany(FarmOwner::class, 'farm_id');
+    }
+
     public function farmers()
     {
         return $this->hasManyThrough(Farmer::class, FarmOwner::class, 'farm_id', 'id', 'id', 'farmer_id');
+    }
+
+    public function users()
+    {
+        return $this->hasMany(FarmUser::class, 'farm_id');
     }
 
     public function getOwnerFullNameAttribute()
@@ -112,7 +123,7 @@ class Farm extends Model
 
         $names = $owners->map(function ($farmOwner) {
             if ($farmOwner->farmer) {
-                return $farmOwner->farmer->first_name . ' ' . $farmOwner->farmer->last_name;
+                return $farmOwner->farmer->first_name . ' ' . $farmOwner->farmer->surname;
             }
             return 'Unknown';
         });
@@ -120,9 +131,25 @@ class Farm extends Model
         return $names->join(', ');
     }
 
+    public function getLocationAttribute()
+    {
+        if ($this->latitudes && $this->longitudes && $this->has_coordinates) {
+            return [
+                'lat' => (float) $this->latitudes,
+                'lng' => (float) $this->longitudes,
+            ];
+        }
+        return null;
+    }
+
+    public function farmLivestocks()
+    {
+        return $this->hasMany(FarmLivestock::class, 'farm_id');
+    }
+
     public function livestocks()
     {
-        return $this->hasMany(Livestock::class);
+        return $this->belongsToMany(Livestock::class, 'farm_livestocks', 'farm_id', 'livestock_id');
     }
 
     public function feedings()
@@ -138,5 +165,29 @@ class Farm extends Model
     public function vaccines()
     {
         return $this->hasMany(Vaccine::class);
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:farms,uuid,' . (request()->route('farm') ?? 'NULL'),
+        ];
     }
 }

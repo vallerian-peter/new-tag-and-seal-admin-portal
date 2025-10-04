@@ -12,6 +12,7 @@ class Insemination extends Model
     protected $table = 'livestock_inseminations';
 
     protected $fillable = [
+        'uuid',
         'reference_no',
         'livestock_id',
         'serial',
@@ -32,12 +33,19 @@ class Insemination extends Model
         'state_id',
         'created_by',
         'updated_by',
+        // Sync fields
+        'last_modified_at',
+        'sync_status',
+        'device_id',
+        'original_created_at',
     ];
 
     protected $casts = [
         'last_heat_date' => 'date',
         'insemination_date' => 'date',
         'semen_production_date' => 'date',
+        'last_modified_at' => 'datetime',
+        'original_created_at' => 'datetime',
     ];
 
     // Relationships
@@ -74,5 +82,29 @@ class Insemination extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:livestock_inseminations,uuid,' . (request()->route('insemination') ?? 'NULL'),
+        ];
     }
 }

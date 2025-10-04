@@ -43,6 +43,9 @@ class FarmForm
                             ->relationship('sizeUnit', 'name')
                             ->searchable()
                             ->preload(),
+
+                        Hidden::make('uuid')
+                            ->default(fn () => \Illuminate\Support\Str::uuid()->toString()),
                     ])
                     ->columns(2),
 

@@ -12,6 +12,7 @@ class Medication extends Model
     protected $table = 'medications';
 
     protected $fillable = [
+        'uuid',
         'quantity',
         'withdrawal_period',
         'remarks',
@@ -25,10 +26,18 @@ class Medication extends Model
         'quantity_unit_id',
         'withdrawal_period_unit_id',
         'medication_date',
+        'vet_id',
+        // Sync fields
+        'last_modified_at',
+        'sync_status',
+        'device_id',
+        'original_created_at',
     ];
 
     protected $casts = [
         'medication_date' => 'date',
+        'last_modified_at' => 'datetime',
+        'original_created_at' => 'datetime',
     ];
 
     // Relationships
@@ -75,5 +84,34 @@ class Medication extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function vet()
+    {
+        return $this->belongsTo(User::class, 'vet_id');
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:medications,uuid,' . (request()->route('medication') ?? 'NULL'),
+        ];
     }
 }

@@ -23,6 +23,7 @@ class User extends Authenticatable implements FilamentUser
      * @var array<int, string>
      */
     protected $fillable = [
+        'uuid',
         'password',
         'username',
         'created_at',
@@ -136,6 +137,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(ExtensionOfficer::class, 'profile_id');
     }
 
+    public function farmUsers()
+    {
+        return $this->hasMany(FarmUser::class, 'user_id');
+    }
+
+    public function farms()
+    {
+        return $this->hasManyThrough(Farm::class, FarmUser::class, 'user_id', 'id', 'id', 'farm_id');
+    }
+
     /**
      * Get the full name based on the user's profile type
      */
@@ -182,5 +193,29 @@ class User extends Authenticatable implements FilamentUser
             default:
                 return 'Secondary';
         }
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:users,uuid,' . (request()->route('user') ?? 'NULL'),
+        ];
     }
 }

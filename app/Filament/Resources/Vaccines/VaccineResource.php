@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Vaccines;
 use App\Filament\Resources\Vaccines\Pages\CreateVaccine;
 use App\Filament\Resources\Vaccines\Pages\EditVaccine;
 use App\Filament\Resources\Vaccines\Pages\ListVaccines;
+use App\Filament\Resources\Vaccines\Pages\ViewVaccine;
 use App\Filament\Resources\Vaccines\Schemas\VaccineForm;
 use App\Filament\Resources\Vaccines\Tables\VaccinesTable;
 use App\Models\Vaccine;
@@ -42,6 +43,7 @@ class VaccineResource extends Resource
         return [
             'index' => ListVaccines::route('/'),
             'create' => CreateVaccine::route('/create'),
+            'view' => ViewVaccine::route('/{record}'),
             'edit' => EditVaccine::route('/{record}/edit'),
         ];
     }

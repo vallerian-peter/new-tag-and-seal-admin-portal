@@ -12,6 +12,7 @@ class Vaccine extends Model
     protected $table = 'vaccines';
 
     protected $fillable = [
+        'uuid',
         'name',
         'lot',
         'formulation_type',
@@ -22,6 +23,11 @@ class Vaccine extends Model
         'vaccine_type_id',
         'vaccine_schedule_id',
         'farm_id',
+        // Sync fields
+        'last_modified_at',
+        'sync_status',
+        'device_id',
+        'original_created_at',
     ];
 
     public function vaccineStatus()
@@ -57,5 +63,34 @@ class Vaccine extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    protected $casts = [
+        'last_modified_at' => 'datetime',
+        'original_created_at' => 'datetime',
+    ];
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:vaccines,uuid,' . (request()->route('vaccine') ?? 'NULL'),
+        ];
     }
 }

@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Farms\Pages;
 use App\Filament\Resources\Farms\FarmResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Schema;
+use App\Filament\Resources\Farms\Schemas\FarmViewSchema;
 
 class ViewFarm extends ViewRecord
 {
@@ -17,4 +19,19 @@ class ViewFarm extends ViewRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function getContentWidth(): ?string
+    {
+        return 'full';
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return FarmViewSchema::configure($schema, $this->getRecord());
+    }
+
+    // protected function getMaxContentWidth(): ?string
+    // {
+    //     return 'full';
+    // }
 }

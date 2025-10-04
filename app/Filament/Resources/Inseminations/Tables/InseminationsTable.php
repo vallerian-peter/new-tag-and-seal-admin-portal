@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Inseminations\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -15,59 +16,67 @@ class InseminationsTable
         return $table
             ->columns([
                 TextColumn::make('reference_no')
-                    ->searchable(),
-                TextColumn::make('livestock_id')
-                    ->numeric()
+                    ->searchable()
                     ->sortable(),
+
+                TextColumn::make('livestock.name')
+                    ->label('Livestock')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('serial')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('last_heat_date')
                     ->date()
                     ->sortable(),
-                TextColumn::make('current_heat_type_id')
-                    ->numeric()
+
+                TextColumn::make('currentHeatType.name')
+                    ->label('Heat Type')
                     ->sortable(),
+
                 TextColumn::make('insemination_date')
                     ->date()
                     ->sortable(),
-                TextColumn::make('insemination_service_id')
-                    ->numeric()
+
+                TextColumn::make('inseminationService.name')
+                    ->label('Service')
                     ->sortable(),
-                TextColumn::make('insemination_semen_straw_type_id')
-                    ->numeric()
-                    ->sortable(),
+
                 TextColumn::make('bull_code')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('bull_breed')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('semen_production_date')
                     ->date()
                     ->sortable(),
+
                 TextColumn::make('production_country')
-                    ->searchable(),
-                TextColumn::make('semen_batch_number')
-                    ->searchable(),
-                TextColumn::make('international_id')
-                    ->searchable(),
-                TextColumn::make('ai_code')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('manufacturer_name')
-                    ->searchable(),
-                TextColumn::make('semen_supplier')
-                    ->searchable(),
-                TextColumn::make('state_id')
-                    ->numeric()
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('created_by')
-                    ->numeric()
+
+                TextColumn::make('state.name')
+                    ->label('State')
                     ->sortable(),
-                TextColumn::make('updated_by')
-                    ->numeric()
+
+                TextColumn::make('createdBy.username')
+                    ->label('Created By')
                     ->sortable(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -77,6 +86,7 @@ class InseminationsTable
                 //
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

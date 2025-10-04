@@ -11,6 +11,7 @@ class Farmer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'uuid',
         'farmer_no',
         'first_name',
         'middle_name',
@@ -114,5 +115,29 @@ class Farmer extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by')->select('system_users.*')->join('system_users', 'system_users.id', '=', 'users.profile_id')->where('profile', 'SystemUser');
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:farmers,uuid,' . (request()->route('farmer') ?? 'NULL'),
+        ];
     }
 }

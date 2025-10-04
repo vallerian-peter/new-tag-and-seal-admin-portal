@@ -12,7 +12,9 @@ class Vaccination extends Model
     protected $table = 'vaccinations';
 
     protected $fillable = [
+        'uuid',
         'vaccination_no',
+        'farm_id',
         'livestock_id',
         'vaccine_id',
         'disease_id',
@@ -21,9 +23,24 @@ class Vaccination extends Model
         'created_by',
         'updated_by',
         'vaccination_status_id',
+        // Sync fields
+        'last_modified_at',
+        'sync_status',
+        'device_id',
+        'original_created_at',
+    ];
+
+    protected $casts = [
+        'last_modified_at' => 'datetime',
+        'original_created_at' => 'datetime',
     ];
 
     // Relationships
+    public function farm()
+    {
+        return $this->belongsTo(Farm::class, 'farm_id');
+    }
+
     public function livestock()
     {
         return $this->belongsTo(Livestock::class, 'livestock_id');
@@ -41,12 +58,12 @@ class Vaccination extends Model
 
     public function vet()
     {
-        return $this->belongsTo(Vet::class, 'vet_id');
+        return $this->belongsTo(User::class, 'vet_id');
     }
 
     public function extensionOfficer()
     {
-        return $this->belongsTo(ExtensionOfficer::class, 'extension_officer_id');
+        return $this->belongsTo(User::class, 'extension_officer_id');
     }
 
     public function vaccinationStatus()
@@ -62,5 +79,29 @@ class Vaccination extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:vaccinations,uuid,' . (request()->route('vaccination') ?? 'NULL'),
+        ];
     }
 }

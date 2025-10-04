@@ -53,8 +53,7 @@ class FarmsTable
                     ->label('Owner(s)')
                     ->getStateUsing(function (Farm $record) {
                         return $record->owner_full_name;
-                    })
-                    ->searchable(),
+                    }),
 
                 TextColumn::make('village.name')
                     ->label('Village')

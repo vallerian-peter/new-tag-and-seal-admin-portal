@@ -30,14 +30,20 @@ class Livestock extends Model
         'total_milk_produced',
         'parity_lactacting_number',
         'date_of_last_calving',
-        'farm_id',
-        'owner_id',
+        'uuid',
+        // Sync fields
+        'last_modified_at',
+        'sync_status',
+        'device_id',
+        'original_created_at'
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
         'date_first_entered_to_farm' => 'datetime',
         'date_of_last_calving' => 'datetime',
+        'last_modified_at' => 'datetime',
+        'original_created_at' => 'datetime',
     ];
 
     // Relationships
@@ -97,14 +103,27 @@ class Livestock extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function farm()
+    public function farmLivestocks()
     {
-        return $this->belongsTo(Farm::class, 'farm_id');
+        return $this->hasMany(FarmLivestock::class, 'livestock_id');
     }
 
-    public function owner()
+    public function farms()
     {
-        return $this->belongsTo(Farmer::class, 'owner_id');
+        return $this->belongsToMany(Farm::class, 'farm_livestocks', 'livestock_id', 'farm_id');
+    }
+
+    public function owners()
+    {
+        return $this->hasManyThrough(
+            Farmer::class,
+            FarmLivestock::class,
+            'livestock_id', // Foreign key on farm_livestocks table
+            'id', // Foreign key on farmers table
+            'id', // Local key on livestocks table
+            'farm_id' // Local key on farm_livestocks table
+        )->join('farm_owners', 'farm_owners.farm_id', '=', 'farm_livestocks.farm_id')
+         ->whereColumn('farm_owners.farmer_id', 'farmers.id');
     }
 
     public function feedings()
@@ -130,5 +149,29 @@ class Livestock extends Model
     public function milkings()
     {
         return $this->hasMany(Milking::class);
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:livestocks,uuid,' . (request()->route('livestock') ?? 'NULL'),
+        ];
     }
 }

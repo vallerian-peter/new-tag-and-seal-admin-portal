@@ -40,7 +40,6 @@ class FeedingsTable
                     ->getStateUsing(function ($record) {
                         return $record->livestock ? $record->livestock->name : 'N/A';
                     })
-                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('farm.name')
@@ -48,18 +47,29 @@ class FeedingsTable
                     ->getStateUsing(function ($record) {
                         return $record->farm ? $record->farm->name : 'N/A';
                     })
-                    ->searchable()
                     ->sortable(),
 
-                TextColumn::make('livestock.owner')
+                TextColumn::make('livestock.owners')
                     ->label('Owner Name')
                     ->getStateUsing(function ($record) {
-                        if ($record->livestock && $record->livestock->owner) {
-                            return $record->livestock->owner->first_name . ' ' . $record->livestock->owner->last_name;
+                        if ($record->livestock) {
+                            $owners = $record->livestock->farmLivestocks()
+                                ->with('farm.farmOwners.farmer')
+                                ->get()
+                                ->flatMap(function ($farmLivestock) {
+                                    return $farmLivestock->farm->farmOwners->map(function ($farmOwner) {
+                                        return $farmOwner->farmer ?
+                                            $farmOwner->farmer->first_name . ' ' . $farmOwner->farmer->surname :
+                                            'Unknown';
+                                    });
+                                })
+                                ->unique()
+                                ->values();
+
+                            return $owners->isNotEmpty() ? $owners->join(', ') : 'N/A';
                         }
                         return 'N/A';
                     })
-                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('feedingType.name')
@@ -67,9 +77,6 @@ class FeedingsTable
                     ->getStateUsing(function ($record) {
                         return $record->feedingType ? $record->feedingType->name : 'N/A';
                     })
-                    ->badge()
-                    ->color(fn ($record) => $record->feedingType ? $record->feedingType->color : 'gray')
-                    ->searchable()
                     ->sortable(),
 
                 TextColumn::make('amount')

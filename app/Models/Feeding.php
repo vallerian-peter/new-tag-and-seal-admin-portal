@@ -12,6 +12,7 @@ class Feeding extends Model
     protected $table = 'feedings';
 
     protected $fillable = [
+        'uuid',
         'reference_no',
         'farm_id',
         'livestock_id',
@@ -22,10 +23,17 @@ class Feeding extends Model
         'created_by',
         'updated_by',
         'state_id',
+        // Sync fields
+        'last_modified_at',
+        'sync_status',
+        'device_id',
+        'original_created_at'
     ];
 
     protected $casts = [
         'feeding_time' => 'datetime',
+        'last_modified_at' => 'datetime',
+        'original_created_at' => 'datetime',
     ];
 
     // Relationships
@@ -57,5 +65,29 @@ class Feeding extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:feedings,uuid,' . (request()->route('feeding') ?? 'NULL'),
+        ];
     }
 }

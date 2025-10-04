@@ -12,6 +12,7 @@ class Milking extends Model
     protected $table = 'milkings';
 
     protected $fillable = [
+        'uuid',
         'reference_no',
         'livestock_id',
         'milking_session_id',
@@ -65,5 +66,29 @@ class Milking extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Generate UUID if not provided
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->uuid)) {
+                $model->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+        });
+    }
+
+    /**
+     * Get the validation rules for the model
+     */
+    public static function rules(): array
+    {
+        return [
+            'uuid' => 'required|string|unique:milkings,uuid,' . (request()->route('milking') ?? 'NULL'),
+        ];
     }
 }

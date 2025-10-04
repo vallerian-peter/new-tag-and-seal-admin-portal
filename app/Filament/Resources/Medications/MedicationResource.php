@@ -2,23 +2,36 @@
 
 namespace App\Filament\Resources\Medications;
 
-use App\Filament\Resources\Medications\Pages\CreateMedication;
-use App\Filament\Resources\Medications\Pages\EditMedication;
-use App\Filament\Resources\Medications\Pages\ListMedications;
-use App\Filament\Resources\Medications\Schemas\MedicationForm;
-use App\Filament\Resources\Medications\Tables\MedicationsTable;
 use App\Models\Medication;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use BackedEnum;
+use App\Filament\Resources\Medications\Schemas\MedicationForm;
+use App\Filament\Resources\Medications\Tables\MedicationsTable;
+use App\Filament\Resources\Medications\Pages\ListMedications;
+use App\Filament\Resources\Medications\Pages\CreateMedication;
+use App\Filament\Resources\Medications\Pages\EditMedication;
+use App\Filament\Resources\Medications\Pages\ViewMedication;
 
 class MedicationResource extends Resource
 {
     protected static ?string $model = Medication::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-beaker';
+
+    protected static ?string $navigationLabel = 'Medications';
+
+    protected static ?string $modelLabel = 'Medication';
+
+    protected static ?string $pluralModelLabel = 'Medications';
+
+    protected static ?int $navigationSort = 9;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Logs & Events';
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -30,18 +43,12 @@ class MedicationResource extends Resource
         return MedicationsTable::configure($table);
     }
 
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [
             'index' => ListMedications::route('/'),
             'create' => CreateMedication::route('/create'),
+            'view' => ViewMedication::route('/{record}'),
             'edit' => EditMedication::route('/{record}/edit'),
         ];
     }
@@ -54,12 +61,5 @@ class MedicationResource extends Resource
     public static function getNavigationBadgeColor(): string|array|null
     {
         return 'success';
-    }
-
-    protected static ?int $navigationSort = 2;
-
-    public static function getNavigationGroup(): ?string
-    {
-        return 'Logs & Events';
     }
 }
