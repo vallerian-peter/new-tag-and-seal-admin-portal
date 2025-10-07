@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Livestocks\Tables;
 
+use App\Models\Livestock;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -17,8 +18,8 @@ class LivestocksTable
     {
         return $table
             ->query(function () {
-                return \App\Models\Livestock::query()
-                    ->with(['livestockType', 'breed', 'species', 'livestockStatus', 'gender', 'livestockObtainedMethod', 'farm', 'owner']);
+                return Livestock::query()
+                    ->with(['livestockType', 'breed', 'species', 'livestockStatus', 'gender', 'livestockObtainedMethod', 'farms']);
             })
             ->columns([
                 TextColumn::make('id')
@@ -40,24 +41,28 @@ class LivestocksTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('farm.name')
+                TextColumn::make('farms.name')
                     ->label('Farm Name')
                     ->getStateUsing(function ($record) {
-                        return $record->farm ? $record->farm->name : 'N/A';
+                        $farm = $record->farms->first();
+                        return $farm ? $farm->name : 'N/A';
                     })
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('owner.first_name')
+                TextColumn::make('owner_name')
                     ->label('Owner')
                     ->getStateUsing(function ($record) {
-                        if ($record->owner) {
-                            return $record->owner->first_name . ' ' . $record->owner->last_name;
+                        // Get owner through farm relationship
+                        $farm = $record->farms->first();
+                        if ($farm && $farm->farmers->isNotEmpty()) {
+                            $farmer = $farm->farmers->first();
+                            return $farmer->first_name . ' ' . $farmer->last_name;
                         }
                         return 'N/A';
                     })
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(false)
+                    ->sortable(false),
 
                 TextColumn::make('livestockType.name')
                     ->label('Type')
@@ -155,17 +160,12 @@ class LivestocksTable
                     ->searchable()
                     ->preload(),
 
-                SelectFilter::make('farm_id')
+                SelectFilter::make('farms')
                     ->label('Farm')
-                    ->relationship('farm', 'name')
+                    ->relationship('farms', 'name')
                     ->searchable()
                     ->preload(),
 
-                SelectFilter::make('owner_id')
-                    ->label('Owner')
-                    ->relationship('owner', 'first_name')
-                    ->searchable()
-                    ->preload(),
             ])
             ->actions([
                 ViewAction::make(),

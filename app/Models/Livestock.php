@@ -97,6 +97,26 @@ class Livestock extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+    
+    /**
+     * Get all farms that own this livestock.
+     */
+    public function farms()
+    {
+        return $this->belongsToMany(Farm::class, 'farm_livestocks', 'livestock_id', 'farm_id')
+            ->withPivot(['state_id', 'created_by', 'updated_by'])
+            ->withTimestamps();
+    }
+    
+    /**
+     * Get the primary farm that owns this livestock.
+     *
+     * @return \App\Models\Farm|null
+     */
+    public function farm()
+    {
+        return $this->farms()->first() ?? null;
+    }
 
     public function updatedBy()
     {
@@ -108,22 +128,31 @@ class Livestock extends Model
         return $this->hasMany(FarmLivestock::class, 'livestock_id');
     }
 
-    public function farms()
-    {
-        return $this->belongsToMany(Farm::class, 'farm_livestocks', 'livestock_id', 'farm_id');
-    }
-
     public function owners()
     {
         return $this->hasManyThrough(
             Farmer::class,
-            FarmLivestock::class,
-            'livestock_id', // Foreign key on farm_livestocks table
+            FarmOwner::class,
+            'farm_id', // Foreign key on farm_owners table
             'id', // Foreign key on farmers table
             'id', // Local key on livestocks table
-            'farm_id' // Local key on farm_livestocks table
-        )->join('farm_owners', 'farm_owners.farm_id', '=', 'farm_livestocks.farm_id')
-         ->whereColumn('farm_owners.farmer_id', 'farmers.id');
+            'farmer_id' // Local key on farm_owners table
+        )->whereExists(function ($query) {
+            $query->select('*')
+                  ->from('farm_livestocks')
+                  ->whereColumn('farm_livestocks.farm_id', 'farm_owners.farm_id')
+                  ->whereColumn('farm_livestocks.livestock_id', 'livestocks.id');
+        });
+    }
+
+    /**
+     * Get the primary owner of this livestock.
+     *
+     * @return \App\Models\Farmer|null
+     */
+    public function owner()
+    {
+        return $this->owners()->first();
     }
 
     public function feedings()
