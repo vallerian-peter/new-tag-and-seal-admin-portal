@@ -5,9 +5,9 @@ namespace App\Filament\Resources\SemenStrawTypes\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Table;
 
 class SemenStrawTypesTable
@@ -27,8 +27,9 @@ class SemenStrawTypesTable
                     ->searchable(),
                 TextColumn::make('category')
                     ->searchable(),
-                TextColumn::make('color')
-                    ->searchable(),
+                ColorColumn::make('color')
+                    ->label('Color')
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -42,7 +43,6 @@ class SemenStrawTypesTable
                 //
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

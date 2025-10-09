@@ -97,7 +97,7 @@ class Livestock extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-    
+
     /**
      * Get all farms that own this livestock.
      */
@@ -107,7 +107,7 @@ class Livestock extends Model
             ->withPivot(['state_id', 'created_by', 'updated_by'])
             ->withTimestamps();
     }
-    
+
     /**
      * Get the primary farm that owns this livestock.
      *
@@ -180,8 +180,33 @@ class Livestock extends Model
         return $this->hasMany(Milking::class);
     }
 
+    public function disposals()
+    {
+        return $this->hasMany(Disposal::class);
+    }
+
+    public function weights()
+    {
+        return $this->hasMany(Weight::class);
+    }
+
+    public function calvings()
+    {
+        return $this->hasMany(Calving::class);
+    }
+
+    public function dryoffs()
+    {
+        return $this->hasMany(Dryoff::class);
+    }
+
+    public function pregnancies()
+    {
+        return $this->hasMany(Pregnancy::class);
+    }
+
     /**
-     * Generate UUID if not provided
+     * Generate UUID if not provided and handle cascade deletes
      */
     protected static function boot()
     {
@@ -191,6 +216,21 @@ class Livestock extends Model
             if (empty($model->uuid)) {
                 $model->uuid = \Illuminate\Support\Str::uuid()->toString();
             }
+        });
+
+        // Cascade delete related records when livestock is deleted
+        static::deleting(function ($livestock) {
+            // Soft delete related records
+            $livestock->vaccinations()->delete();
+            $livestock->inseminations()->delete();
+            $livestock->milkings()->delete();
+            $livestock->disposals()->delete();
+            $livestock->weights()->delete();
+            $livestock->calvings()->delete();
+            $livestock->dryoffs()->delete();
+            $livestock->pregnancies()->delete();
+            $livestock->feedings()->delete();
+            $livestock->medications()->delete();
         });
     }
 

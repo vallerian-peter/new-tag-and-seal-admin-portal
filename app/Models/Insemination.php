@@ -15,6 +15,7 @@ class Insemination extends Model
         'uuid',
         'reference_no',
         'livestock_id',
+        'farm_id',
         'serial',
         'last_heat_date',
         'current_heat_type_id',
@@ -52,6 +53,11 @@ class Insemination extends Model
     public function livestock()
     {
         return $this->belongsTo(Livestock::class, 'livestock_id');
+    }
+
+    public function farm()
+    {
+        return $this->belongsTo(Farm::class, 'farm_id');
     }
 
     public function currentHeatType()

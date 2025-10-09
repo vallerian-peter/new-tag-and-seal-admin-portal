@@ -20,7 +20,7 @@ class Disposal extends Model
         'animal_disposal_type_id',
         'reasons',
         'remarks',
-        'meat_obtained',
+        'meat_obtaines',
         'vet_id',
         'extension_officer_id',
         'created_by',
@@ -83,7 +83,7 @@ class Disposal extends Model
      */
     public function vet()
     {
-        return $this->belongsTo(Vet::class, 'vet_id');
+        return $this->belongsTo(User::class, 'vet_id');
     }
 
     /**
@@ -91,7 +91,7 @@ class Disposal extends Model
      */
     public function extensionOfficer()
     {
-        return $this->belongsTo(ExtensionOfficer::class, 'extension_officer_id');
+        return $this->belongsTo(User::class, 'extension_officer_id');
     }
 
     /**

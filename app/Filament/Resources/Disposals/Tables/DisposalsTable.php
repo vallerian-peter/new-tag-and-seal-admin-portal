@@ -7,9 +7,13 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Table;
 
 class DisposalsTable
@@ -71,21 +75,31 @@ class DisposalsTable
                         return $state;
                     }),
 
-                ToggleColumn::make('meat_obtained')
+                ToggleColumn::make('meat_obtaines')
                     ->label('Meat Obtained')
                     ->sortable(),
 
-                TextColumn::make('vet.name')
+                TextColumn::make('vet.full_name')
                     ->label('Vet')
                     ->getStateUsing(function ($record) {
-                        return $record->vet ? $record->vet->name : 'N/A';
+                        return $record->vet ? $record->vet->full_name : 'N/A';
+                    })
+                    ->searchable(query: function ($query, string $search) {
+                        return $query->whereHas('vet', function ($query) use ($search) {
+                            $query->where('username', 'like', "%{$search}%");
+                        });
                     })
                     ->sortable(),
 
-                TextColumn::make('extensionOfficer.name')
+                TextColumn::make('extensionOfficer.full_name')
                     ->label('Extension Officer')
                     ->getStateUsing(function ($record) {
-                        return $record->extensionOfficer ? $record->extensionOfficer->name : 'N/A';
+                        return $record->extensionOfficer ? $record->extensionOfficer->full_name : 'N/A';
+                    })
+                    ->searchable(query: function ($query, string $search) {
+                        return $query->whereHas('extensionOfficer', function ($query) use ($search) {
+                            $query->where('username', 'like', "%{$search}%");
+                        });
                     })
                     ->sortable(),
 
@@ -120,9 +134,33 @@ class DisposalsTable
                     ->searchable()
                     ->preload(),
 
+                SelectFilter::make('livestock_id')
+                    ->label('Livestock')
+                    ->relationship('livestock', 'name')
+                    ->searchable()
+                    ->preload(),
+
                 SelectFilter::make('animal_disposal_type_id')
                     ->label('Disposal Type')
                     ->relationship('disposalType', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('vet_id')
+                    ->label('Veterinarian')
+                    ->relationship('vet', 'username')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('extension_officer_id')
+                    ->label('Extension Officer')
+                    ->relationship('extensionOfficer', 'username')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('created_by')
+                    ->label('Created By')
+                    ->relationship('createdBy', 'username')
                     ->searchable()
                     ->preload(),
 
@@ -131,11 +169,46 @@ class DisposalsTable
                     ->relationship('state', 'name')
                     ->searchable()
                     ->preload(),
+
+                TernaryFilter::make('meat_obtaines')
+                    ->label('Meat Obtained')
+                    ->placeholder('All records')
+                    ->trueLabel('Meat obtained')
+                    ->falseLabel('No meat obtained'),
+
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from')
+                            ->label('Created From'),
+                        DatePicker::make('created_until')
+                            ->label('Created Until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn ($query, $date) => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn ($query, $date) => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->label('Created Date Range'),
             ])
             ->actions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation(),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

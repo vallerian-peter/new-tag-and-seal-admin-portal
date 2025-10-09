@@ -21,6 +21,12 @@ class InseminationForm
                     ->required()
                     ->maxLength(255),
 
+                Select::make('farm_id')
+                    ->relationship('farm', 'name')
+                    ->required()
+                    ->searchable()
+                    ->preload(),
+
                 Select::make('livestock_id')
                     ->relationship('livestock', 'name')
                     ->required()

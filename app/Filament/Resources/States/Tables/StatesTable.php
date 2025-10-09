@@ -5,12 +5,15 @@ namespace App\Filament\Resources\States\Tables;
 use App\Models\State;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ActionsColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\Action;
+use Filament\Actions\ActionGroup;
 
 class StatesTable
 {
@@ -47,8 +50,18 @@ class StatesTable
                 //
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation(),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

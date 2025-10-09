@@ -7,8 +7,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Table;
 
 class FeedingsTable
@@ -120,9 +123,21 @@ class FeedingsTable
                     ->searchable()
                     ->preload(),
 
+                SelectFilter::make('livestock_id')
+                    ->label('Livestock')
+                    ->relationship('livestock', 'name')
+                    ->searchable()
+                    ->preload(),
+
                 SelectFilter::make('feeding_type_id')
                     ->label('Feeding Type')
                     ->relationship('feedingType', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('created_by')
+                    ->label('Created By')
+                    ->relationship('createdBy', 'username')
                     ->searchable()
                     ->preload(),
 
@@ -131,11 +146,60 @@ class FeedingsTable
                     ->relationship('state', 'name')
                     ->searchable()
                     ->preload(),
+
+                Filter::make('feeding_time')
+                    ->form([
+                        DatePicker::make('feeding_from')
+                            ->label('Feeding From'),
+                        DatePicker::make('feeding_until')
+                            ->label('Feeding Until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['feeding_from'],
+                                fn ($query, $date) => $query->whereDate('feeding_time', '>=', $date),
+                            )
+                            ->when(
+                                $data['feeding_until'],
+                                fn ($query, $date) => $query->whereDate('feeding_time', '<=', $date),
+                            );
+                    })
+                    ->label('Feeding Date Range'),
+
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from')
+                            ->label('Created From'),
+                        DatePicker::make('created_until')
+                            ->label('Created Until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn ($query, $date) => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn ($query, $date) => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->label('Created Date Range'),
             ])
             ->actions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation(),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

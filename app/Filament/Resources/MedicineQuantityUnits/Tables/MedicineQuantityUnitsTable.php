@@ -6,8 +6,8 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Table;
 
 class MedicineQuantityUnitsTable
@@ -28,10 +28,9 @@ class MedicineQuantityUnitsTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('color')
+                ColorColumn::make('color')
                     ->label('Color')
-                    ->badge()
-                    ->color(fn (string $state): string => $state),
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Created')
@@ -49,7 +48,6 @@ class MedicineQuantityUnitsTable
                 //
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

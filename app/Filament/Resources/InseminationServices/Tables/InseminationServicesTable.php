@@ -5,9 +5,9 @@ namespace App\Filament\Resources\InseminationServices\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Table;
 
 class InseminationServicesTable
@@ -25,8 +25,9 @@ class InseminationServicesTable
 
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('color')
-                    ->searchable(),
+                ColorColumn::make('color')
+                    ->label('Color')
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -40,7 +41,6 @@ class InseminationServicesTable
                 //
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

@@ -3,8 +3,7 @@
 namespace App\Filament\Resources\SchoolLevels\Schemas;
 
 use Filament\Schemas\Schema;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 
@@ -21,26 +20,11 @@ class SchoolLevelForm
                             ->required()
                             ->maxLength(255),
 
-                        TextInput::make('short_name')
-                            ->label('Short Name')
-                            ->maxLength(50),
-
-                        Textarea::make('description')
-                            ->label('Description')
-                            ->rows(3)
-                            ->columnSpanFull(),
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
                     ])
                     ->columns(2),
-
-                Section::make('System Information')
-                    ->schema([
-                        Hidden::make('created_by')
-                            ->default(auth()->user()->id ?? 1),
-
-                        Hidden::make('updated_by')
-                            ->default(auth()->user()->id ?? 1),
-                    ])
-                    ->visible(false),
             ]);
     }
 }

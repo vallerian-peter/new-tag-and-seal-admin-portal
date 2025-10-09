@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\MedicineQuantityUnits\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 
 class MedicineQuantityUnitForm
 {
@@ -11,10 +13,18 @@ class MedicineQuantityUnitForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('color')
-                    ->required(),
+                Section::make('Medicine Quantity Unit Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Medicine Quantity Unit Name')
+                            ->required()
+                            ->maxLength(255),
+
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

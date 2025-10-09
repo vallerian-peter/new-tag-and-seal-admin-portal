@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\HeatTypes\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 
 class HeatTypeForm
 {
@@ -11,10 +13,18 @@ class HeatTypeForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('color')
-                    ->required(),
+                Section::make('Heat Type Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Heat Type Name')
+                            ->required()
+                            ->maxLength(255),
+
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

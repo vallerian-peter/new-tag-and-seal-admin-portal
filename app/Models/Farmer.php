@@ -118,7 +118,7 @@ class Farmer extends Model
     }
 
     /**
-     * Generate UUID if not provided
+     * Generate UUID if not provided and handle cascade deletes
      */
     protected static function boot()
     {
@@ -128,6 +128,15 @@ class Farmer extends Model
             if (empty($model->uuid)) {
                 $model->uuid = \Illuminate\Support\Str::uuid()->toString();
             }
+        });
+
+        // Cascade delete pivot tables when farmer is deleted
+        static::deleting(function ($farmer) {
+            // Delete farm ownership assignments
+            $farmer->farmOwners()->delete();
+
+            // Delete farmer attachments
+            $farmer->attachments()->delete();
         });
     }
 

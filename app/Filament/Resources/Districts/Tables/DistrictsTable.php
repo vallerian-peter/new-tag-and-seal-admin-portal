@@ -8,6 +8,7 @@ use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -76,8 +77,18 @@ class DistrictsTable
                     ->preload(),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation(),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

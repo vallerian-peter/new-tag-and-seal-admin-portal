@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\VaccineStatuses\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 
 class VaccineStatusForm
 {
@@ -11,10 +13,18 @@ class VaccineStatusForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('color')
-                    ->required(),
+                Section::make('Vaccine Status Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Vaccine Status Name')
+                            ->required()
+                            ->maxLength(255),
+
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

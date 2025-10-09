@@ -23,7 +23,9 @@ class VaccineResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return VaccineForm::configure($schema);
+        // Determine if this is an edit operation by checking the current route
+        $isEdit = request()->routeIs('*.edit') || request()->routeIs('*.update');
+        return VaccineForm::configure($schema, $isEdit);
     }
 
     public static function table(Table $table): Table

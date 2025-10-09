@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\SemenStrawTypes\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 
 class SemenStrawTypeForm
 {
@@ -11,12 +13,23 @@ class SemenStrawTypeForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('category')
-                    ->required(),
-                TextInput::make('color')
-                    ->required(),
+                Section::make('Semen Straw Type Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Semen Straw Type Name')
+                            ->required()
+                            ->maxLength(255),
+
+                        TextInput::make('category')
+                            ->label('Category')
+                            ->required()
+                            ->maxLength(255),
+
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

@@ -10,6 +10,7 @@ use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 
@@ -152,9 +153,18 @@ class FarmsTable
                     ->falseLabel('Without GPS'),
             ])
             ->actions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation(),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

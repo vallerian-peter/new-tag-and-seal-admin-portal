@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\Farms\Pages;
 
 use App\Filament\Resources\Farms\FarmResource;
+use App\Filament\Resources\Farms\Schemas\FarmViewSchema;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
-use App\Filament\Resources\Farms\Schemas\FarmViewSchema;
 
 class ViewFarm extends ViewRecord
 {
@@ -29,9 +29,4 @@ class ViewFarm extends ViewRecord
     {
         return FarmViewSchema::configure($schema, $this->getRecord());
     }
-
-    // protected function getMaxContentWidth(): ?string
-    // {
-    //     return 'full';
-    // }
 }

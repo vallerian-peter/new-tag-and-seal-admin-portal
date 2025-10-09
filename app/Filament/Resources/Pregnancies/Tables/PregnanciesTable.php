@@ -7,8 +7,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Table;
 
 class PregnanciesTable
@@ -110,9 +113,21 @@ class PregnanciesTable
                     ->searchable()
                     ->preload(),
 
+                SelectFilter::make('livestock_id')
+                    ->label('Livestock')
+                    ->relationship('livestock', 'name')
+                    ->searchable()
+                    ->preload(),
+
                 SelectFilter::make('test_result_id')
                     ->label('Test Result')
                     ->relationship('testResult', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('created_by')
+                    ->label('Created By')
+                    ->relationship('createdBy', 'username')
                     ->searchable()
                     ->preload(),
 
@@ -121,11 +136,60 @@ class PregnanciesTable
                     ->relationship('state', 'name')
                     ->searchable()
                     ->preload(),
+
+                Filter::make('test_date')
+                    ->form([
+                        DatePicker::make('test_from')
+                            ->label('Test Date From'),
+                        DatePicker::make('test_until')
+                            ->label('Test Date Until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['test_from'],
+                                fn ($query, $date) => $query->whereDate('test_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['test_until'],
+                                fn ($query, $date) => $query->whereDate('test_date', '<=', $date),
+                            );
+                    })
+                    ->label('Test Date Range'),
+
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from')
+                            ->label('Created From'),
+                        DatePicker::make('created_until')
+                            ->label('Created Until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn ($query, $date) => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn ($query, $date) => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->label('Created Date Range'),
             ])
             ->actions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation(),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

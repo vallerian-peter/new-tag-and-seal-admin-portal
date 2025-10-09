@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\MedicineTypes\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 
 class MedicineTypeForm
 {
@@ -11,10 +13,18 @@ class MedicineTypeForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('color')
-                    ->required(),
+                Section::make('Medicine Type Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Medicine Type Name')
+                            ->required()
+                            ->maxLength(255),
+
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

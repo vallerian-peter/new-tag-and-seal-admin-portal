@@ -7,8 +7,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Table;
 
 class CalvingsTable
@@ -107,9 +110,33 @@ class CalvingsTable
                     ->searchable()
                     ->preload(),
 
+                SelectFilter::make('livestock_id')
+                    ->label('Livestock')
+                    ->relationship('livestock', 'name')
+                    ->searchable()
+                    ->preload(),
+
                 SelectFilter::make('calving_type_id')
                     ->label('Calving Type')
                     ->relationship('calvingType', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('calving_problem_type_id')
+                    ->label('Calving Problem')
+                    ->relationship('calvingProblem', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('calf_reproductive_problem_type_id')
+                    ->label('Reproductive Problem')
+                    ->relationship('reproductiveProblem', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('created_by')
+                    ->label('Created By')
+                    ->relationship('createdBy', 'username')
                     ->searchable()
                     ->preload(),
 
@@ -118,11 +145,40 @@ class CalvingsTable
                     ->relationship('state', 'name')
                     ->searchable()
                     ->preload(),
+
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from')
+                            ->label('Created From'),
+                        DatePicker::make('created_until')
+                            ->label('Created Until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn ($query, $date) => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn ($query, $date) => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->label('Created Date Range'),
             ])
             ->actions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation(),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

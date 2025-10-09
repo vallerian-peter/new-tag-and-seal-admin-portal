@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Farms\Schemas;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Schema;
 
@@ -16,11 +15,9 @@ class FarmViewSchema
         return $schema
             ->record($record)
             ->components([
-
-                Grid::make(1) // All sections stack full-width
+                Grid::make(1)
                     ->columnSpanFull()
                     ->components([
-
                         Section::make('Farm Information')
                             ->components([
                                 Grid::make(2)->components([
@@ -33,51 +30,51 @@ class FarmViewSchema
 
                                     Fieldset::make('Regional Registration Number')
                                         ->components([
-                                            Text::make(fn ($record) => $record->regional_reg_no ?: 'Not provided'),
+                                            Text::make(fn ($record) => $record->regional_reg_no ?: 'Not specified'),
                                         ]),
 
                                     Fieldset::make('Farm Name')
                                         ->components([
                                             Text::make(fn ($record) => $record->name)
-                                                ->weight('bold')
-                                                ->size('lg'),
+                                                ->weight('bold'),
                                         ]),
 
                                     Fieldset::make('Farm Size')
                                         ->components([
-                                            Text::make(fn ($record) => $record->size . ' ' . ($record->sizeUnit?->name ?? 'units')),
+                                            Text::make(fn ($record) => $record->size . ' ' . ($record->sizeUnit->name ?? '')),
                                         ]),
 
-                                    Fieldset::make('Size Unit')
+                                    Fieldset::make('Farm Status')
                                         ->components([
-                                            Text::make(fn ($record) => $record->sizeUnit?->name ?: 'Not specified')
-                                                ->color('info'),
+                                            Text::make(fn ($record) => $record->farmStatus?->name ?: 'Not specified')
+                                                ->color(fn ($record) => match (strtolower($record->farmStatus?->name ?? '')) {
+                                                    'active' => 'success',
+                                                    'inactive' => 'danger',
+                                                    'pending' => 'warning',
+                                                    default => 'secondary',
+                                                }),
+                                        ]),
+
+                                    Fieldset::make('Legal Status')
+                                        ->components([
+                                            Text::make(fn ($record) => $record->legalStatus?->name ?: 'Not specified'),
+                                        ]),
+
+                                    Fieldset::make('Has GPS Coordinates')
+                                        ->components([
+                                            Text::make(fn ($record) => $record->has_coordinates ? 'Yes' : 'No')
+                                                ->color(fn ($record) => $record->has_coordinates ? 'success' : 'gray'),
                                         ]),
                                 ]),
                             ]),
 
                         Section::make('Location Information')
                             ->components([
-                                Grid::make(2)->components([
-                                    Fieldset::make('Latitude')
-                                        ->components([
-                                            Text::make(fn ($record) => $record->latitudes ?: 'Not provided'),
-                                        ]),
-
-                                    Fieldset::make('Longitude')
-                                        ->components([
-                                            Text::make(fn ($record) => $record->longitudes ?: 'Not provided'),
-                                        ]),
-
-                                    Fieldset::make('GPS Coordinates')
-                                        ->components([
-                                            Icon::make(fn ($record) => $record->has_coordinates ? 'heroicon-o-check-circle' : 'heroicon-o-x-circle')
-                                                ->color(fn ($record) => $record->has_coordinates ? 'success' : 'danger'),
-                                        ]),
-
+                                Grid::make(3)->components([
                                     Fieldset::make('Physical Address')
+                                        ->columnSpanFull()
                                         ->components([
-                                            Text::make(fn ($record) => $record->physical_address ?: 'Not provided'),
+                                            Text::make(fn ($record) => $record->physical_address),
                                         ]),
 
                                     Fieldset::make('Street')
@@ -95,11 +92,6 @@ class FarmViewSchema
                                             Text::make(fn ($record) => $record->ward?->name ?: 'Not specified'),
                                         ]),
 
-                                    Fieldset::make('Division')
-                                        ->components([
-                                            Text::make(fn ($record) => $record->division?->name ?: 'Not specified'),
-                                        ]),
-
                                     Fieldset::make('District')
                                         ->components([
                                             Text::make(fn ($record) => $record->district?->name ?: 'Not specified'),
@@ -114,103 +106,132 @@ class FarmViewSchema
                                         ->components([
                                             Text::make(fn ($record) => $record->country?->name ?: 'Not specified'),
                                         ]),
-                                ]),
-                            ]),
 
-                        Section::make('Farm Details')
-                            ->components([
-                                Grid::make(2)->components([
-                                    Fieldset::make('Legal Status')
+                                    Fieldset::make('Latitude')
                                         ->components([
-                                            Text::make(fn ($record) => $record->legalStatus?->name ?: 'Not specified')
-                                                ->color('warning')
-                                                ->weight('bold'),
+                                            Text::make(fn ($record) => $record->latitudes ?: 'Not specified'),
                                         ]),
 
-                                    Fieldset::make('Farm Status')
+                                    Fieldset::make('Longitude')
                                         ->components([
-                                            Text::make(fn ($record) => $record->farmStatus?->name ?: 'Not specified')
-                                                ->color(fn ($record) => match (strtolower($record->farmStatus?->name ?? '')) {
-                                                    'active' => 'success',
-                                                    'inactive' => 'danger',
-                                                    'pending' => 'warning',
-                                                    default => 'secondary',
-                                                })
-                                                ->weight('bold'),
+                                            Text::make(fn ($record) => $record->longitudes ?: 'Not specified'),
                                         ]),
 
-                                    Fieldset::make('GPS Information')
+                                    Fieldset::make('GPS Info')
                                         ->components([
-                                            Text::make(fn ($record) => $record->gps ?: 'Not provided'),
+                                            Text::make(fn ($record) => $record->gps ?: 'Not specified'),
                                         ]),
                                 ]),
                             ]),
 
-                        Section::make('Ownership Information')
+                        Section::make('Farm Owners')
+                            ->description('Farmers who own this farm')
                             ->components([
-                                Grid::make(2)->components([
-                                    Fieldset::make('Farm Owners')
-                                        ->components([
-                                            Text::make(fn ($record) => $record->owner_full_name ?: 'No owners assigned')
-                                                ->color('success')
-                                                ->weight('bold'),
-                                        ]),
-
-                                    Fieldset::make('Owner Details')
+                                Grid::make(1)->components([
+                                    Fieldset::make('Owners List')
                                         ->components([
                                             Text::make(function ($record) {
-                                                $owners = $record->farmOwners()->with('farmer')->get();
+                                                $owners = $record->farmOwners()->with('farmer', 'state')->get();
                                                 if ($owners->isEmpty()) {
                                                     return 'No owners assigned';
                                                 }
-
-                                                $details = $owners->map(function ($farmOwner) {
-                                                    if ($farmOwner->farmer) {
-                                                        $farmer = $farmOwner->farmer;
-                                                        return "{$farmer->first_name} {$farmer->surname} ({$farmer->farmer_no})";
-                                                    }
-                                                    return 'Unknown Owner';
-                                                });
-
-                                                return $details->join(', ');
-                                            }),
+                                                return $owners->map(function ($owner) {
+                                                    $farmerName = $owner->farmer
+                                                        ? trim($owner->farmer->first_name . ' ' . $owner->farmer->middle_name . ' ' . $owner->farmer->surname)
+                                                        : 'Unknown';
+                                                    $status = $owner->state?->name ?? 'N/A';
+                                                    return "• {$farmerName} ({$status}) - Assigned: " . $owner->created_at->format('M d, Y');
+                                                })->join("\n");
+                                            })
+                                            ->html(),
                                         ]),
                                 ]),
-                            ]),
+                            ])
+                            ->collapsible(),
 
-                                Section::make('System Information')
-                                    ->components([
-                                        Grid::make(2)->components([
-                                            Fieldset::make('UUID')
-                                                ->components([
-                                                    Text::make(fn ($record) => $record->uuid ?: 'Not generated')
-                                                        ->color('info')
-                                                        ->size('sm'),
-                                                ]),
-
-                                            Fieldset::make('Created At')
-                                                ->components([
-                                                    Text::make(fn ($record) => $record->created_at?->format('M d, Y H:i') . ' (' . $record->created_at?->diffForHumans() . ')'),
-                                                ]),
-
-                                            Fieldset::make('Last Updated')
-                                                ->components([
-                                                    Text::make(fn ($record) => $record->updated_at?->format('M d, Y H:i') . ' (' . $record->updated_at?->diffForHumans() . ')'),
-                                                ]),
-
-                                            Fieldset::make('Created By')
-                                                ->components([
-                                                    Text::make(fn ($record) => $record->createdBy?->username ?: 'Unknown'),
-                                                ]),
-
-                                            Fieldset::make('Updated By')
-                                                ->components([
-                                                    Text::make(fn ($record) => $record->updatedBy?->username ?: 'Unknown'),
-                                                ]),
+                        Section::make('Assigned Users')
+                            ->description('Users managing this farm')
+                            ->components([
+                                Grid::make(1)->components([
+                                    Fieldset::make('Users List')
+                                        ->components([
+                                            Text::make(function ($record) {
+                                                $users = $record->users()->with('user', 'state')->get();
+                                                if ($users->isEmpty()) {
+                                                    return 'No users assigned';
+                                                }
+                                                return $users->map(function ($farmUser) {
+                                                    $username = $farmUser->user?->username ?? 'Unknown';
+                                                    $role = $farmUser->role ?: 'No role';
+                                                    $status = $farmUser->state?->name ?? 'N/A';
+                                                    return "• {$username} - Role: {$role} ({$status}) - Assigned: " . $farmUser->created_at->format('M d, Y');
+                                                })->join("\n");
+                                            })
+                                            ->html(),
                                         ]),
-                                    ])
-                                    ->collapsible(),
+                                ]),
+                            ])
+                            ->collapsible(),
+
+                        Section::make('Farm Livestock')
+                            ->description('Livestock assigned to this farm')
+                            ->components([
+                                Grid::make(1)->components([
+                                    Fieldset::make('Livestock List')
+                                        ->components([
+                                            Text::make(function ($record) {
+                                                $livestock = $record->farmLivestocks()->with('livestock.livestockType', 'state')->get();
+                                                if ($livestock->isEmpty()) {
+                                                    return 'No livestock assigned';
+                                                }
+                                                return $livestock->map(function ($farmLivestock) {
+                                                    $name = $farmLivestock->livestock?->name ?? 'Unknown';
+                                                    $idNumber = $farmLivestock->livestock?->identification_number ?? 'N/A';
+                                                    $type = $farmLivestock->livestock?->livestockType?->name ?? 'N/A';
+                                                    $status = $farmLivestock->state?->name ?? 'N/A';
+                                                    return "• {$name} (ID: {$idNumber}, Type: {$type}) - Status: {$status} - Assigned: " . $farmLivestock->created_at->format('M d, Y');
+                                                })->join("\n");
+                                            })
+                                            ->html(),
+                                        ]),
+                                ]),
+                            ])
+                            ->collapsible(),
+
+                        Section::make('System Information')
+                            ->components([
+                                Grid::make(2)->components([
+                                    Fieldset::make('UUID')
+                                        ->components([
+                                            Text::make(fn ($record) => $record->uuid ?: 'Not generated')
+                                                ->color('info')
+                                                ->size('sm'),
+                                        ]),
+
+                                    Fieldset::make('Created By')
+                                        ->components([
+                                            Text::make(fn ($record) => $record->createdBy?->username ?: 'Unknown'),
+                                        ]),
+
+                                    Fieldset::make('Created At')
+                                        ->components([
+                                            Text::make(fn ($record) => $record->created_at?->format('M d, Y H:i') . ' (' . $record->created_at?->diffForHumans() . ')'),
+                                        ]),
+
+                                    Fieldset::make('Updated By')
+                                        ->components([
+                                            Text::make(fn ($record) => $record->updatedBy?->username ?: 'Unknown'),
+                                        ]),
+
+                                    Fieldset::make('Last Updated')
+                                        ->components([
+                                            Text::make(fn ($record) => $record->updated_at?->format('M d, Y H:i') . ' (' . $record->updated_at?->diffForHumans() . ')'),
+                                        ]),
+                                ]),
+                            ])
+                            ->collapsible(),
                     ]),
             ]);
     }
 }
+

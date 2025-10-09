@@ -5,9 +5,9 @@ namespace App\Filament\Resources\SchoolLevels\Tables;
 use App\Models\SchoolLevel;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 
@@ -29,6 +29,9 @@ class SchoolLevelsTable
                     ->searchable()
                     ->sortable(),
 
+                ColorColumn::make('color')
+                    ->label('Color')
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Created')

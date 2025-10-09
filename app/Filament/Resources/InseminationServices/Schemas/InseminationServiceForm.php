@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\InseminationServices\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 
 class InseminationServiceForm
 {
@@ -11,10 +13,18 @@ class InseminationServiceForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('color')
-                    ->required(),
+                Section::make('Insemination Service Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Insemination Service Name')
+                            ->required()
+                            ->maxLength(255),
+
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

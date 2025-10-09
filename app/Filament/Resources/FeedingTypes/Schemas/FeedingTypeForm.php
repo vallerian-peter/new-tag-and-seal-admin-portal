@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\FeedingTypes\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 
 class FeedingTypeForm
 {
@@ -11,10 +13,18 @@ class FeedingTypeForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('color')
-                    ->required(),
+                Section::make('Feeding Type Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Feeding Type Name')
+                            ->required()
+                            ->maxLength(255),
+
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

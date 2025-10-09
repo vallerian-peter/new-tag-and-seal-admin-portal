@@ -5,9 +5,9 @@ namespace App\Filament\Resources\WithdrawPeriodUnits\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Table;
 
 class WithdrawPeriodUnitsTable
@@ -24,9 +24,13 @@ class WithdrawPeriodUnitsTable
                     ->sortable(),
 
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('color')
-                    ->searchable(),
+                    ->label('Withdraw Period Unit Name')
+                    ->searchable()
+                    ->sortable(),
+
+                ColorColumn::make('color')
+                    ->label('Color')
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -40,7 +44,6 @@ class WithdrawPeriodUnitsTable
                 //
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

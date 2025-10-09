@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\VaccineTypes\Schemas;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 
 class VaccineTypeForm
 {
@@ -11,10 +13,18 @@ class VaccineTypeForm
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->required(),
-                TextInput::make('color')
-                    ->required(),
+                Section::make('Vaccine Type Information')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Vaccine Type Name')
+                            ->required()
+                            ->maxLength(255),
+
+                        ColorPicker::make('color')
+                            ->label('Color')
+                            ->required(),
+                    ])
+                    ->columns(2),
             ]);
     }
 }

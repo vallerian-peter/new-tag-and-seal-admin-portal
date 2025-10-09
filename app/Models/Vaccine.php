@@ -55,6 +55,16 @@ class Vaccine extends Model
         return $this->hasMany(Vaccination::class);
     }
 
+    public function vaccineDiseases()
+    {
+        return $this->hasMany(VaccineDisease::class, 'vaccine_id');
+    }
+
+    public function diseases()
+    {
+        return $this->belongsToMany(Disease::class, 'vaccine_diseases', 'vaccine_id', 'disease_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -71,7 +81,7 @@ class Vaccine extends Model
     ];
 
     /**
-     * Generate UUID if not provided
+     * Generate UUID if not provided and handle cascade deletes
      */
     protected static function boot()
     {
@@ -81,6 +91,15 @@ class Vaccine extends Model
             if (empty($model->uuid)) {
                 $model->uuid = \Illuminate\Support\Str::uuid()->toString();
             }
+        });
+
+        // Cascade delete pivot tables when vaccine is deleted
+        static::deleting(function ($vaccine) {
+            // Delete vaccine-disease assignments
+            $vaccine->vaccineDiseases()->delete();
+
+            // Delete related vaccinations
+            $vaccine->vaccinations()->delete();
         });
     }
 

@@ -48,18 +48,18 @@ class DisposalForm
                     ->rows(3)
                     ->columnSpanFull(),
 
-                Checkbox::make('meat_obtained')
+                Checkbox::make('meat_obtaines')
                     ->label('Meat Obtained'),
 
                 Select::make('vet_id')
                     ->label('Vet')
-                    ->relationship('vet', 'name')
+                    ->relationship('vet', 'username')
                     ->searchable()
                     ->preload(),
 
                 Select::make('extension_officer_id')
                     ->label('Extension Officer')
-                    ->relationship('extensionOfficer', 'name')
+                    ->relationship('extensionOfficer', 'username')
                     ->searchable()
                     ->preload(),
 

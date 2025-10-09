@@ -9,6 +9,7 @@ use App\Enums\UserTypeEnum;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Filters\Filter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\Select;
@@ -182,10 +183,19 @@ class UsersTable
                     }),
             ])
             ->actions([
-                ViewAction::make(),
-                EditAction::make()
-                    ->disabled(fn ($record) => $record->profile != 'SystemUser'),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit')
+                        ->disabled(fn ($record) => $record->profile != 'SystemUser'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation(),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

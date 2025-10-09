@@ -196,7 +196,7 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * Generate UUID if not provided
+     * Generate UUID if not provided and handle cascade deletes
      */
     protected static function boot()
     {
@@ -206,6 +206,12 @@ class User extends Authenticatable implements FilamentUser
             if (empty($model->uuid)) {
                 $model->uuid = \Illuminate\Support\Str::uuid()->toString();
             }
+        });
+
+        // Cascade delete pivot tables when user is deleted
+        static::deleting(function ($user) {
+            // Delete user-farm assignments
+            $user->farmUsers()->delete();
         });
     }
 

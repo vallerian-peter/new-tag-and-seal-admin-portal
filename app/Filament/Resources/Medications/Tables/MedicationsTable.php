@@ -7,8 +7,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Table;
 
 class MedicationsTable
@@ -18,8 +21,9 @@ class MedicationsTable
         return $table
             ->query(function () {
                 return \App\Models\Medication::query()
-                    ->with(['farm', 'livestock', 'disease', 'medicine', 'quantityUnit', 'withdrawalPeriodUnit', 'state']);
+                    ->with(['farm', 'livestock', 'disease', 'medicine', 'quantityUnit', 'withdrawalPeriodUnit', 'state', 'createdBy', 'updatedBy']);
             })
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('id')
                     ->label('#')
@@ -28,66 +32,66 @@ class MedicationsTable
                     })
                     ->sortable(),
 
+                TextColumn::make('reference_no')
+                    ->searchable()
+                    ->sortable()
+                    ->label('Reference No')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('livestock.name')
-                    ->label('Livestock Name')
-                    ->getStateUsing(function ($record) {
-                        return $record->livestock ? $record->livestock->name : 'N/A';
-                    })
+                    ->label('Livestock')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('farm.name')
-                    ->label('Farm Name')
-                    ->getStateUsing(function ($record) {
-                        return $record->farm ? $record->farm->name : 'N/A';
-                    })
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('livestock.owner')
-                    ->label('Owner Name')
-                    ->getStateUsing(function ($record) {
-                        if ($record->livestock && $record->livestock->owner) {
-                            return $record->livestock->owner->first_name . ' ' . $record->livestock->owner->last_name;
-                        }
-                        return 'N/A';
-                    })
+                    ->label('Farm')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('medicine.name')
                     ->label('Medicine')
-                    ->getStateUsing(function ($record) {
-                        return $record->medicine ? $record->medicine->name : 'N/A';
-                    })
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('disease.name')
                     ->label('Disease')
-                    ->getStateUsing(function ($record) {
-                        return $record->disease ? $record->disease->name : 'N/A';
-                    })
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('quantity')
                     ->label('Quantity')
                     ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('quantityUnit.name')
-                    ->label('Unit')
-                    ->getStateUsing(function ($record) {
-                        return $record->quantityUnit ? $record->quantityUnit->name : 'N/A';
-                    })
-                    ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(fn ($record) => $record->quantity . ' ' . ($record->quantityUnit->name ?? '')),
 
                 TextColumn::make('medication_date')
                     ->label('Medication Date')
                     ->date()
                     ->sortable(),
+
+                TextColumn::make('withdrawal_period')
+                    ->label('Withdrawal Period')
+                    ->searchable()
+                    ->sortable()
+                    ->formatStateUsing(fn ($record) => $record->withdrawal_period . ' ' . ($record->withdrawalPeriodUnit->name ?? '')),
+
+                TextColumn::make('state.name')
+                    ->label('State')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('createdBy.name')
+                    ->label('Created By')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('updatedBy.name')
+                    ->label('Updated By')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('remarks')
                     ->label('Remarks')
@@ -99,16 +103,17 @@ class MedicationsTable
                             return null;
                         }
                         return $state;
-                    }),
+                    })
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
-                    ->label('Created')
+                    ->label('Created At')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
-                    ->label('Updated')
+                    ->label('Updated At')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -117,6 +122,12 @@ class MedicationsTable
                 SelectFilter::make('farm_id')
                     ->label('Farm')
                     ->relationship('farm', 'name')
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('livestock_id')
+                    ->label('Livestock')
+                    ->relationship('livestock', 'name')
                     ->searchable()
                     ->preload(),
 
@@ -137,11 +148,44 @@ class MedicationsTable
                     ->relationship('state', 'name')
                     ->searchable()
                     ->preload(),
+
+                Filter::make('medication_date')
+                    ->form([
+                        DatePicker::make('medication_from')
+                            ->label('Medication From'),
+                        DatePicker::make('medication_until')
+                            ->label('Medication Until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when(
+                                $data['medication_from'],
+                                fn ($query, $date) => $query->whereDate('medication_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['medication_until'],
+                                fn ($query, $date) => $query->whereDate('medication_date', '<=', $date),
+                            );
+                    })
+                    ->label('Medication Date Range'),
             ])
-            ->actions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+            ->recordActions([
+                ActionGroup::make([
+                    ViewAction::make()
+                        ->label('View Details'),
+                    EditAction::make()
+                        ->label('Edit'),
+                    DeleteAction::make()
+                        ->label('Delete')
+                        ->requiresConfirmation()
+                        ->modalHeading('Delete Medication Record')
+                        ->modalDescription('Are you sure you want to delete this medication record? This action cannot be undone.')
+                        ->modalSubmitActionLabel('Delete')
+                        ->modalCancelActionLabel('Cancel'),
+                ])
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm')
+                ->color('gray'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

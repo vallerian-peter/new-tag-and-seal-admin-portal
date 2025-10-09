@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Section;
 
 class FarmForm
@@ -134,6 +135,121 @@ class FarmForm
                             ->maxLength(255),
                     ])
                     ->columns(2),
+
+                Section::make('Farm Owners')
+                    ->description('Assign farmers as owners of this farm')
+                    ->schema([
+                        Repeater::make('farmOwners')
+                            ->label('Owners')
+                            ->relationship('farmOwners')
+                            ->schema([
+                                Select::make('farmer_id')
+                                    ->label('Farmer')
+                                    ->relationship('farmer', 'first_name')
+                                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->first_name . ' ' . $record->surname)
+                                    ->required()
+                                    ->searchable()
+                                    ->preload(),
+
+                                Select::make('state_id')
+                                    ->label('Status')
+                                    ->relationship('state', 'name')
+                                    ->default(1)
+                                    ->required()
+                                    ->searchable()
+                                    ->preload(),
+
+                                Hidden::make('assigned_by')
+                                    ->default(auth()->user()->id ?? 1),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string =>
+                                isset($state['farmer_id']) ? 'Owner #' . ($state['farmer_id'] ?? 'New') : 'New Owner'
+                            ),
+                    ])
+                    ->collapsible()
+                    ->collapsed($isEdit),
+
+                Section::make('Assigned Users')
+                    ->description('Assign users to manage this farm')
+                    ->schema([
+                        Repeater::make('users')
+                            ->label('Farm Users')
+                            ->relationship('users')
+                            ->schema([
+                                Select::make('user_id')
+                                    ->label('User')
+                                    ->relationship('user', 'username')
+                                    ->required()
+                                    ->searchable()
+                                    ->preload(),
+
+                                TextInput::make('role')
+                                    ->label('Role')
+                                    ->maxLength(255)
+                                    ->placeholder('e.g., Manager, Worker, Supervisor'),
+
+                                Select::make('state_id')
+                                    ->label('Status')
+                                    ->relationship('state', 'name')
+                                    ->default(1)
+                                    ->required()
+                                    ->searchable()
+                                    ->preload(),
+
+                                Hidden::make('assigned_by')
+                                    ->default(auth()->user()->id ?? 1),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(0)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string =>
+                                isset($state['role']) ? $state['role'] : 'New User Assignment'
+                            ),
+                    ])
+                    ->collapsible()
+                    ->collapsed($isEdit),
+
+                Section::make('Farm Livestock')
+                    ->description('Assign livestock to this farm')
+                    ->schema([
+                        Repeater::make('farmLivestocks')
+                            ->label('Livestock')
+                            ->relationship('farmLivestocks')
+                            ->schema([
+                                Select::make('livestock_id')
+                                    ->label('Livestock')
+                                    ->relationship('livestock', 'name')
+                                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ' (' . $record->identification_number . ')')
+                                    ->required()
+                                    ->searchable()
+                                    ->preload(),
+
+                                Select::make('state_id')
+                                    ->label('Status')
+                                    ->relationship('state', 'name')
+                                    ->default(1)
+                                    ->required()
+                                    ->searchable()
+                                    ->preload(),
+
+                                Hidden::make('created_by')
+                                    ->default(auth()->user()->id ?? 1),
+
+                                Hidden::make('updated_by')
+                                    ->default(auth()->user()->id ?? 1),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string =>
+                                'Livestock Assignment'
+                            ),
+                    ])
+                    ->collapsible()
+                    ->collapsed($isEdit),
 
                 Section::make('System Information')
                     ->schema([
